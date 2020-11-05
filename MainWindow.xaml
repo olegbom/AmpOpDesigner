@@ -1,0 +1,71 @@
+﻿<Window x:Class="AmpOpDesigner.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AmpOpDesigner"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="1100">
+    <Window.DataContext>
+        <local:MainViewModel/>
+    </Window.DataContext>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="230"/>
+            <ColumnDefinition Width="400"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0">
+            <TextBlock Text="Напряжение питания, В"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Margin="2" Text="{Binding Supply.Negative}"></TextBox>
+                <TextBlock Grid.Column="1" >-</TextBlock>
+                <TextBox Grid.Column="2" Margin="2" Text="{Binding Supply.Positive}"></TextBox>
+            </Grid>
+            <TextBlock Text="Диапазон входного напряжения Uin, В"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Margin="2" Text="{Binding Input.Negative}"></TextBox>
+                <TextBlock Grid.Column="1" >-</TextBlock>
+                <TextBox Grid.Column="2" Margin="2" Text="{Binding Input.Positive}"></TextBox>
+            </Grid>
+            <TextBlock Text="Входное напряжение U2, В"/>
+            <TextBox Margin="2" Text="{Binding Voltage2}"></TextBox>
+            <TextBlock Text="Диапазон выходного напряжения Uout, В"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Margin="2" Text="{Binding Output.Negative}"></TextBox>
+                <TextBlock Grid.Column="1" >-</TextBlock>
+                <TextBox Grid.Column="2" Margin="2" Text="{Binding Output.Positive}"></TextBox>
+            </Grid>
+            <Button Content="Start" Command="{Binding StartCommand}" Margin="3"/>
+            
+        </StackPanel>
+        <local:Scheme Grid.Column="1" SchemeSolution="{Binding SelectedSolution}"/>
+        <ListView Grid.Column="2" ItemsSource="{Binding Solutions}" SelectedItem="{Binding SelectedSolution}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding R3}">R3</GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding R4}">R4</GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding R5}">R5</GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding R6}">R6</GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding K1}">K1</GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding K2}">K2</GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
+</Window>
