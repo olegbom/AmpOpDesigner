@@ -24,6 +24,7 @@ namespace AmpOpDesigner
 
         public SchemeSolution SelectedSolution { get; set; }
 
+        
         #region StartCommand
 
         private RelayCommand _startCommand;
@@ -64,14 +65,36 @@ namespace AmpOpDesigner
 
     public class SchemeSolution:INotifyPropertyChanged
     {
+        public static readonly double Tolerance = 1;
+
+        public static double MinPos(double x) => x * (100 - Tolerance) / 100;
+        public static double MaxPos(double x) => x * (100 + Tolerance) / 100;
+
 
         public double R3 { get; set; } = 10000;
         public double R4 { get; set; } = 10000;
         public double R5 { get; set; } = 10000;
         public double R6 { get; set; } = 10000;
 
-        public double K1 => R3 / R4;
-        public double K2 => (R3 + R4) * R6 / (R6 + R5) / R4;
+        public double K1 => CalcK1(R3, R4);
+
+        public double MinK1 => CalcK1(MinPos(R3), MaxPos(R4));
+        public double MaxK1 => CalcK1(MaxPos(R3), MinPos(R4));
+        public double K2 => CalcK2(R3,R4,R5,R6);
+        public double MinK2 => CalcK2(MinPos(R3), MaxPos(R4), MaxPos(R5), MinPos(R6));
+        public double MaxK2 => CalcK2(MaxPos(R3), MinPos(R4), MinPos(R5), MaxPos(R6));
+
+        public static double CalcK1(double r3, double r4)
+        {
+            return r3 / r4;
+        }
+
+        public static double CalcK2(double r3, double r4, double r5, double r6)
+        {
+            return (r3 + r4) * r6 / (r6 + r5) / r4;
+        }
+
+        
 
         public event PropertyChangedEventHandler PropertyChanged;
 

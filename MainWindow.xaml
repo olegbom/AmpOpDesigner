@@ -55,17 +55,28 @@
             
         </StackPanel>
         <local:Scheme Grid.Column="1" SchemeSolution="{Binding SelectedSolution}"/>
-        <ListView Grid.Column="2" ItemsSource="{Binding Solutions}" SelectedItem="{Binding SelectedSolution}">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn DisplayMemberBinding="{Binding R3}">R3</GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding R4}">R4</GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding R5}">R5</GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding R6}">R6</GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding K1}">K1</GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding K2}">K2</GridViewColumn>
-                </GridView>
-            </ListView.View>
-        </ListView>
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="120"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <ListView ItemsSource="{Binding Solutions}" SelectedItem="{Binding SelectedSolution}">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn DisplayMemberBinding="{Binding R3}">R3</GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding R4}">R4</GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding R5}">R5</GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding R6}">R6</GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding K1}">K1</GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding K2}">K2</GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding MinK1}">MinK1</GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding MaxK1}">MaxK1</GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding MinK2}">MinK2</GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding MaxK2}">MaxK2</GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            
+        </Grid>
     </Grid>
 </Window>

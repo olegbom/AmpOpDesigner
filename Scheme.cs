@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using AmpOpDesigner.Converters;
 
 namespace AmpOpDesigner
 {
@@ -122,7 +123,7 @@ namespace AmpOpDesigner
         }
 
         private static readonly Pen SchemePen = new Pen(Brushes.Black, 1);
-
+        private static readonly ResistorNominalConverter ResNominalConverter = new ResistorNominalConverter();
         private void DrawResistor(DrawingContext context, double scale, string designator, double value, Orientation orientation = Orientation.Horizontal)
         {
             if (orientation == Orientation.Horizontal)
@@ -133,9 +134,11 @@ namespace AmpOpDesigner
                 var oldPenCoord = _penCoord;
 
                 _penCoord += new Vector(5, -2) * scale;
-                DrawText(context, designator,AlignmentX.Center, AlignmentY.Bottom);
+                DrawText(context, designator, AlignmentX.Center, AlignmentY.Bottom);
                 _penCoord += new Vector(0, 4) * scale;
-                DrawText(context, $"{value:F}", AlignmentX.Center, AlignmentY.Top);
+
+                string strNominal = ResNominalConverter.Convert(value, typeof(string), null, CultureInfo.CurrentCulture) as string;
+                DrawText(context, strNominal, AlignmentX.Center, AlignmentY.Top);
                 _penCoord = oldPenCoord + new Vector(10 * scale, 0);
 
 
@@ -146,8 +149,9 @@ namespace AmpOpDesigner
                     (_penCoord + new Vector(-2, 0) * scale).ToPoint(),
                     (_penCoord + new Vector(2, 10) * scale).ToPoint()));
                 var oldPenCoord = _penCoord;
-                _penCoord += new Vector(2, 5) * scale;
-                DrawText(context, $"{designator}{Environment.NewLine}{value:F}", AlignmentX.Left, AlignmentY.Center);
+                _penCoord += new Vector(3, 5) * scale;
+                string strNominal = ResNominalConverter.Convert(value, typeof(string), null, CultureInfo.CurrentCulture) as string;
+                DrawText(context, $"{designator}{Environment.NewLine}{strNominal}", AlignmentX.Left, AlignmentY.Center, TextAlignment.Left);
                 _penCoord = oldPenCoord + new Vector(0, 10 * scale);
             }
         }
@@ -182,22 +186,26 @@ namespace AmpOpDesigner
         }
 
         private static readonly Typeface Typeface = new Typeface("Century Gothic");
-        private void DrawText(DrawingContext context, string text, AlignmentX alignmentX = AlignmentX.Center, AlignmentY alignmentY = AlignmentY.Top)
+        private void DrawText(DrawingContext context, string text, 
+            AlignmentX alignmentX = AlignmentX.Center, AlignmentY alignmentY = AlignmentY.Top,
+            TextAlignment textAlignment = TextAlignment.Center)
         {
             var formText = new FormattedText(text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
-                Typeface, 15, Brushes.Black, null, 96)
+                Typeface, 14, Brushes.Black, null, 96)
             {
-                TextAlignment = TextAlignment.Center,
+                TextAlignment = textAlignment,
             };
             var v = _penCoord;
             switch (alignmentX)
             {
-                case AlignmentX.Left:
-                    v.X += formText.Width / 2;
-                    break;
-                case AlignmentX.Right:
-                    v.X -= formText.Width / 2;
-                    break;
+                case AlignmentX.Left: v.X += formText.Width / 2; break;
+                case AlignmentX.Right: v.X -= formText.Width / 2; break;
+            }
+
+            switch (textAlignment)
+            {
+                case TextAlignment.Left: v.X -= formText.Width / 2; break;
+                case TextAlignment.Right: v.X += formText.Width / 2; break;
             }
             switch (alignmentY)
             {

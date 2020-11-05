@@ -61,6 +61,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converters\ResistorNominalConverter.cs" />
     <Compile Include="DifferentialVoltage.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="IAsyncCommand.cs" />
