@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AmpOpDesigner"
+        xmlns:oxy="http://oxyplot.org/wpf"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="1100">
     <Window.DataContext>
@@ -76,7 +77,9 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            
+            <oxy:PlotView Grid.Row="1" Model="{Binding TolerancePlotViewModel}">
+                
+            </oxy:PlotView>
         </Grid>
     </Grid>
 </Window>
