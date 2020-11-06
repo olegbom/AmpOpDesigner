@@ -49,10 +49,10 @@ namespace AmpOpDesigner
             linearAxis2.MinimumPadding = 0;
             linearAxis2.MajorGridlineStyle = LineStyle.Solid;
             linearAxis2.MinorGridlineStyle = LineStyle.Dot;
-            linearAxis2.AbsoluteMaximum = Output.Positive * 1.2;
+           /* linearAxis2.AbsoluteMaximum = Output.Positive * 1.2;
             linearAxis2.AbsoluteMinimum = 0;
             linearAxis2.Maximum = Output.Positive * 1.2;
-            linearAxis2.Minimum = 0;
+            linearAxis2.Minimum = 0;*/
             TolerancePlotViewModel.Axes.Add(linearAxis2);
         }
 
@@ -82,9 +82,9 @@ namespace AmpOpDesigner
             Solutions.Add(solution);
             SelectedSolution = Solutions.Last();
 
-           
+            TolerancePlotViewModel.Series.Clear();
 
-            var lineSeriesIdeal = new LineSeries();
+             var lineSeriesIdeal = new LineSeries();
             lineSeriesIdeal.Title = "Ideal";
             lineSeriesIdeal.Points.Add(new DataPoint(Input.Negative, Input.Negative * SelectedSolution.K2 - Voltage2 * SelectedSolution.K1));
             lineSeriesIdeal.Points.Add(new DataPoint(Input.Positive, Input.Positive * SelectedSolution.K2 - Voltage2 * SelectedSolution.K1));
@@ -92,11 +92,13 @@ namespace AmpOpDesigner
             lineSeriesIdeal.MarkerStroke = OxyColors.Black;
             lineSeriesIdeal.MarkerStrokeThickness = 1.5;
             lineSeriesIdeal.MarkerType = MarkerType.Circle;
-            TolerancePlotViewModel.Series.Add(lineSeriesIdeal);
+           // TolerancePlotViewModel.Series.Add(lineSeriesIdeal);
             var lineSeriesMin = new LineSeries();
             lineSeriesMin.Title = "Min";
-            lineSeriesMin.Points.Add(new DataPoint(Input.Negative, Input.Negative * SelectedSolution.MinK2 - Voltage2 * SelectedSolution.MinK1));
-            lineSeriesMin.Points.Add(new DataPoint(Input.Positive, Input.Positive * SelectedSolution.MinK2 - Voltage2 * SelectedSolution.MinK1));
+            lineSeriesMin.Points.Add(new DataPoint(Input.Negative, Input.Negative * SelectedSolution.K2 - Voltage2 * SelectedSolution.K1 -
+                                                                         Input.Negative * SelectedSolution.MinK2 + Voltage2 * SelectedSolution.MinK1));
+            lineSeriesMin.Points.Add(new DataPoint(Input.Positive, Input.Positive * SelectedSolution.K2 - Voltage2 * SelectedSolution.K1 -
+                                                                     Input.Positive * SelectedSolution.MinK2 + Voltage2 * SelectedSolution.MinK1));
             lineSeriesMin.MarkerSize = 4;
             lineSeriesMin.MarkerStroke = OxyColors.Black;
             lineSeriesMin.MarkerStrokeThickness = 1.5;
@@ -104,8 +106,10 @@ namespace AmpOpDesigner
             TolerancePlotViewModel.Series.Add(lineSeriesMin);
             var lineSeriesMax = new LineSeries();
             lineSeriesMax.Title = "Max";
-            lineSeriesMax.Points.Add(new DataPoint(Input.Negative, Input.Negative * SelectedSolution.MaxK2 - Voltage2 * SelectedSolution.MaxK1));
-            lineSeriesMax.Points.Add(new DataPoint(Input.Positive, Input.Positive * SelectedSolution.MaxK2 - Voltage2 * SelectedSolution.MaxK1));
+            lineSeriesMax.Points.Add(new DataPoint(Input.Negative, Input.Negative * SelectedSolution.K2 - Voltage2 * SelectedSolution.K1 - 
+                                                                   Input.Negative * SelectedSolution.MaxK2 + Voltage2 * SelectedSolution.MaxK1));
+            lineSeriesMax.Points.Add(new DataPoint(Input.Positive, Input.Positive * SelectedSolution.K2 - Voltage2 * SelectedSolution.K1 -
+                                                                        Input.Positive * SelectedSolution.MaxK2 + Voltage2 * SelectedSolution.MaxK1));
             lineSeriesMax.MarkerSize = 4;
             lineSeriesMax.MarkerStroke = OxyColors.Black;
             lineSeriesMax.MarkerStrokeThickness = 1.5;
