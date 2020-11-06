@@ -14,6 +14,7 @@ namespace AmpOpDesigner.Converters
         {
             if (value is double r)
             {
+                r = Math.Round(r);
                 if (r < 1000)
                 {
                     return $"{r:F0}";

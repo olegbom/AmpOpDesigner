@@ -70,10 +70,6 @@
                         <GridViewColumn DisplayMemberBinding="{Binding R6}">R6</GridViewColumn>
                         <GridViewColumn DisplayMemberBinding="{Binding K1}">K1</GridViewColumn>
                         <GridViewColumn DisplayMemberBinding="{Binding K2}">K2</GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding MinK1}">MinK1</GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding MaxK1}">MaxK1</GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding MinK2}">MinK2</GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding MaxK2}">MaxK2</GridViewColumn>
                     </GridView>
                 </ListView.View>
             </ListView>

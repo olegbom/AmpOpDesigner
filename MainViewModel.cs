@@ -24,8 +24,61 @@ namespace AmpOpDesigner
         public DifferentialVoltage Output { get; private set; } = new DifferentialVoltage(0.5,3.2);
 
         public ObservableCollection<SchemeSolution> Solutions { get; }= new ObservableCollection<SchemeSolution>();
-
+        public SchemeSolution IdealSolution { get; private set; }
         public SchemeSolution SelectedSolution { get; set; }
+
+        public void OnSelectedSolutionChanged()
+        {
+            TolerancePlotViewModel.Series.Clear();
+
+            if (SelectedSolution == null)
+            {
+                TolerancePlotViewModel.InvalidatePlot(true);
+                return;
+            }
+            
+          
+            var areaSeries1 = new AreaSeries();
+            areaSeries1.DataFieldX2 = "Uin";
+            areaSeries1.DataFieldY2 = "Uout Minimum";
+            areaSeries1.DataFieldX = "Uin";
+            areaSeries1.DataFieldY = "Uout Maximum";
+            areaSeries1.Title = "Maximum/Minimum";
+            areaSeries1.Fill = OxyColors.LightBlue;
+            areaSeries1.MarkerFill = OxyColors.Transparent;
+            areaSeries1.StrokeThickness = 0;
+            areaSeries1.Points.Add(new DataPoint(Input.Negative, SelectedSolution.UOutExtremePositive(Input.Negative, Voltage2)));
+            areaSeries1.Points.Add(new DataPoint(Input.Positive, SelectedSolution.UOutExtremePositive(Input.Positive, Voltage2)));
+            areaSeries1.Points2.Add(new DataPoint(Input.Negative, SelectedSolution.UOutExtremeNegative(Input.Negative, Voltage2)));
+            areaSeries1.Points2.Add(new DataPoint(Input.Positive, SelectedSolution.UOutExtremeNegative(Input.Positive, Voltage2)));
+            TolerancePlotViewModel.Series.Add(areaSeries1);
+            
+            var lineSeriesSelected = new LineSeries();
+            lineSeriesSelected.Title = "Selected";
+
+            double uOut1 = Input.Negative * SelectedSolution.K2 - Voltage2 * SelectedSolution.K1;
+            double uOut2 = Input.Positive * SelectedSolution.K2 - Voltage2 * SelectedSolution.K1;
+
+            lineSeriesSelected.Points.Add(new DataPoint(Input.Negative, uOut1));
+            lineSeriesSelected.Points.Add(new DataPoint(Input.Positive, uOut2));
+            TolerancePlotViewModel.Series.Add(lineSeriesSelected);
+
+            var lineSeriesIdeal = new LineSeries();
+            lineSeriesIdeal.Title = "Ideal";
+
+            uOut1 = Input.Negative * IdealSolution.K2 - Voltage2 * IdealSolution.K1;
+            uOut2 = Input.Positive * IdealSolution.K2 - Voltage2 * IdealSolution.K1;
+
+            lineSeriesIdeal.Points.Add(new DataPoint(Input.Negative, uOut1));
+            lineSeriesIdeal.Points.Add(new DataPoint(Input.Positive, uOut2));
+            TolerancePlotViewModel.Series.Add(lineSeriesIdeal);
+            
+
+
+
+            TolerancePlotViewModel.InvalidatePlot(true);
+        }
+
 
         public PlotModel TolerancePlotViewModel { get; private set; }
 
@@ -49,10 +102,10 @@ namespace AmpOpDesigner
             linearAxis2.MinimumPadding = 0;
             linearAxis2.MajorGridlineStyle = LineStyle.Solid;
             linearAxis2.MinorGridlineStyle = LineStyle.Dot;
-           /* linearAxis2.AbsoluteMaximum = Output.Positive * 1.2;
+            linearAxis2.AbsoluteMaximum = Output.Positive * 1.2;
             linearAxis2.AbsoluteMinimum = 0;
             linearAxis2.Maximum = Output.Positive * 1.2;
-            linearAxis2.Minimum = 0;*/
+            linearAxis2.Minimum = 0;
             TolerancePlotViewModel.Axes.Add(linearAxis2);
         }
 
@@ -73,49 +126,52 @@ namespace AmpOpDesigner
             double k1 = (Input.Negative * dOut / dIn - Output.Negative)/ Voltage2;
             double k2 = dOut / dIn;
             double r3 = 10_000;
-            double r4 = r3/k1;
             double r6 = r3;
+            double r4 = r3/k1;
             double r5 = (r3 + r4) * r6 / k2 / r4 - r6;
 
-            var solution = new SchemeSolution(){R3 = r3, R4=r4,R5=r5,R6=r6};
-         
-            Solutions.Add(solution);
-            SelectedSolution = Solutions.Last();
+            IdealSolution = new SchemeSolution(){R3 = r3, R4=r4,R5=r5,R6=r6};
+            List<SchemeSolution> solutions = new List<SchemeSolution>();
 
-            TolerancePlotViewModel.Series.Clear();
+          
+            for (int i = 0; i < Helper.E24.Count; i++)
+            {
+                r3 = Helper.E24[i] * 10_000;
+                
+                for (int j = 0; j < Helper.E24.Count; j++)
+                {
+                    r6 = Helper.E24[j] * 10_000;
+                    r4 = r3 / k1;
+                    
+                    r5 = (r3 + r4) * r6 / k2 / r4 - r6;
+                    //var solution = new SchemeSolution() { R3 = r3, R4 = Helper.Round(r4), R5 = Helper.Round(r5), R6 = r6 };
+                   // solutions.Add(solution);
+                    var solution = new SchemeSolution() { R3 = r3, R4 = Helper.RoundUp(r4), R5 = Helper.RoundUp(r5), R6 = r6 };
+                    solutions.Add(solution);
+                    solution = new SchemeSolution() { R3 = r3, R4 = Helper.RoundDown(r4), R5 = Helper.RoundUp(r5), R6 = r6 };
+                    solutions.Add(solution);
+                    solution = new SchemeSolution() { R3 = r3, R4 = Helper.RoundUp(r4), R5 = Helper.RoundDown(r5), R6 = r6 };
+                    solutions.Add(solution);
+                    solution = new SchemeSolution() { R3 = r3, R4 = Helper.RoundDown(r4), R5 = Helper.RoundDown(r5), R6 = r6 };
+                    solutions.Add(solution);
+                }
+            } 
+            var sorted = solutions.Where(s =>
+            {
+                var outNeg = s.UOut(Input.Negative, Voltage2);
+                var outPos = s.UOut(Input.Positive, Voltage2);
+                return outNeg > 0 && outPos > 0 && 
+                       Math.Abs(outNeg - Output.Negative) < 0.2 &&
+                       Math.Abs(outPos - Output.Positive) < 0.2;
+            }).OrderBy(s => Math.Abs(s.UOut(Input.Negative, Voltage2) - Output.Negative) +
+                                                Math.Abs(s.UOut(Input.Positive, Voltage2) - Output.Positive));
 
-             var lineSeriesIdeal = new LineSeries();
-            lineSeriesIdeal.Title = "Ideal";
-            lineSeriesIdeal.Points.Add(new DataPoint(Input.Negative, Input.Negative * SelectedSolution.K2 - Voltage2 * SelectedSolution.K1));
-            lineSeriesIdeal.Points.Add(new DataPoint(Input.Positive, Input.Positive * SelectedSolution.K2 - Voltage2 * SelectedSolution.K1));
-            lineSeriesIdeal.MarkerSize = 4;
-            lineSeriesIdeal.MarkerStroke = OxyColors.Black;
-            lineSeriesIdeal.MarkerStrokeThickness = 1.5;
-            lineSeriesIdeal.MarkerType = MarkerType.Circle;
-           // TolerancePlotViewModel.Series.Add(lineSeriesIdeal);
-            var lineSeriesMin = new LineSeries();
-            lineSeriesMin.Title = "Min";
-            lineSeriesMin.Points.Add(new DataPoint(Input.Negative, Input.Negative * SelectedSolution.K2 - Voltage2 * SelectedSolution.K1 -
-                                                                         Input.Negative * SelectedSolution.MinK2 + Voltage2 * SelectedSolution.MinK1));
-            lineSeriesMin.Points.Add(new DataPoint(Input.Positive, Input.Positive * SelectedSolution.K2 - Voltage2 * SelectedSolution.K1 -
-                                                                     Input.Positive * SelectedSolution.MinK2 + Voltage2 * SelectedSolution.MinK1));
-            lineSeriesMin.MarkerSize = 4;
-            lineSeriesMin.MarkerStroke = OxyColors.Black;
-            lineSeriesMin.MarkerStrokeThickness = 1.5;
-            lineSeriesMin.MarkerType = MarkerType.Circle;
-            TolerancePlotViewModel.Series.Add(lineSeriesMin);
-            var lineSeriesMax = new LineSeries();
-            lineSeriesMax.Title = "Max";
-            lineSeriesMax.Points.Add(new DataPoint(Input.Negative, Input.Negative * SelectedSolution.K2 - Voltage2 * SelectedSolution.K1 - 
-                                                                   Input.Negative * SelectedSolution.MaxK2 + Voltage2 * SelectedSolution.MaxK1));
-            lineSeriesMax.Points.Add(new DataPoint(Input.Positive, Input.Positive * SelectedSolution.K2 - Voltage2 * SelectedSolution.K1 -
-                                                                        Input.Positive * SelectedSolution.MaxK2 + Voltage2 * SelectedSolution.MaxK1));
-            lineSeriesMax.MarkerSize = 4;
-            lineSeriesMax.MarkerStroke = OxyColors.Black;
-            lineSeriesMax.MarkerStrokeThickness = 1.5;
-            lineSeriesMax.MarkerType = MarkerType.Circle;
-            TolerancePlotViewModel.Series.Add(lineSeriesMax);
-            TolerancePlotViewModel.InvalidatePlot(true);
+            foreach (var solution in sorted)
+            {
+                Solutions.Add(solution);
+            }
+            
+            SelectedSolution = Solutions.First();
         }
 
         #endregion
@@ -130,6 +186,7 @@ namespace AmpOpDesigner
         }
     }
 
+    
     public class SchemeSolution:INotifyPropertyChanged
     {
         public static readonly double Tolerance = 1;
@@ -145,11 +202,7 @@ namespace AmpOpDesigner
 
         public double K1 => CalcK1(R3, R4);
 
-        public double MinK1 => CalcK1(MinPos(R3), MaxPos(R4));
-        public double MaxK1 => CalcK1(MaxPos(R3), MinPos(R4));
         public double K2 => CalcK2(R3,R4,R5,R6);
-        public double MinK2 => CalcK2(MinPos(R3), MaxPos(R4), MaxPos(R5), MinPos(R6));
-        public double MaxK2 => CalcK2(MaxPos(R3), MinPos(R4), MinPos(R5), MaxPos(R6));
 
         public static double CalcK1(double r3, double r4)
         {
@@ -161,7 +214,34 @@ namespace AmpOpDesigner
             return (r3 + r4) * r6 / (r6 + r5) / r4;
         }
 
-        
+
+        public double UOutExtremePositive(double u2, double u1)
+        {
+            double r3 = MinPos(R3);
+            double r4 = MaxPos(R4);
+            double r5 = MinPos(R5);
+            double r6 = MaxPos(R6);
+
+            double k1 = CalcK1(r3, r4);
+            double k2 = CalcK2(r3, r4, r5, r6);
+            return u2 * k2 - u1 * k1;
+        }
+
+
+        public double UOutExtremeNegative(double u2, double u1)
+        {
+            double r3 = MaxPos(R3);
+            double r4 = MinPos(R4);
+            double r5 = MaxPos(R5);
+            double r6 = MinPos(R6);
+
+            double k1 = CalcK1(r3, r4);
+            double k2 = CalcK2(r3, r4, r5, r6);
+            return u2 * k2 - u1 * k1;
+        }
+
+        public double UOut(double u2, double u1) => u2 * K2 - u1 * K1;
+
 
         public event PropertyChangedEventHandler PropertyChanged;
 
